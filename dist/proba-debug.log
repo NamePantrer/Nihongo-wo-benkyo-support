@@ -1,0 +1,24 @@
+start flavor=atlas port=8766 exe=C:\Users\Admin\Downloads\Проект обучения\dist\Benran.exe argv=['C:\\Users\\Admin\\Downloads\\Проект обучения\\dist\\Benran.exe'] frozen=True
+uvicorn starting
+webview start flavor=atlas url=http://127.0.0.1:8766
+start flavor=atlas port=8766 exe=C:\Users\Admin\Downloads\Проект обучения\dist\Benran.exe argv=['C:\\Users\\Admin\\Downloads\\Проект обучения\\dist\\Benran.exe'] frozen=True
+occupant kind=desktop pid=12856 C:\Users\Admin\Downloads\Проект обучения\dist\Benran.exe
+already: request_show
+start flavor=atlas port=8766 exe=C:\Users\Admin\Downloads\Проект обучения\dist\Benran.exe argv=['C:\\Users\\Admin\\Downloads\\Проект обучения\\dist\\Benran.exe'] frozen=True
+uvicorn starting
+webview start flavor=atlas url=http://127.0.0.1:8766
+start flavor=atlas port=8766 exe=C:\Users\Admin\Downloads\Проект обучения\dist\Benran.exe argv=['C:\\Users\\Admin\\Downloads\\Проект обучения\\dist\\Benran.exe'] frozen=True
+occupant kind=desktop pid=59304 C:\Users\Admin\Downloads\Проект обучения\dist\Benran.exe
+already: request_show
+start flavor=tutor port=8765 exe=C:\Users\Admin\Downloads\Проект обучения\dist\Nihongo.exe argv=['C:\\Users\\Admin\\Downloads\\Проект обучения\\dist\\Nihongo.exe'] frozen=True
+occupant kind=other pid=49236 C:\Users\Admin\AppData\Local\Programs\Python\Python313\python.exe
+die: 日本語学習アシスタント не отвечает. Занят C:\Users\Admin\AppData\Local\Programs\Python\Python313\python.exe. В трее (у часов): меню → Выйти, или диспетчер задач.
+start flavor=tutor port=8765 exe=C:\Users\Admin\Downloads\Проект обучения\dist\Nihongo.exe argv=['C:\\Users\\Admin\\Downloads\\Проект обучения\\dist\\Nihongo.exe'] frozen=True
+occupant kind=other pid=49236 C:\Users\Admin\AppData\Local\Programs\Python\Python313\python.exe
+die: 日本語学習アシスタント не отвечает. Занят C:\Users\Admin\AppData\Local\Programs\Python\Python313\python.exe. В трее (у часов): меню → Выйти, или диспетчер задач.
+start flavor=tutor port=8765 exe=C:\Users\Admin\Downloads\Проект обучения\dist\Nihongo.exe argv=['C:\\Users\\Admin\\Downloads\\Проект обучения\\dist\\Nihongo.exe'] frozen=True
+occupant kind=other pid=49236 C:\Users\Admin\AppData\Local\Programs\Python\Python313\python.exe
+die: 日本語学習アシスタント не отвечает. Занят C:\Users\Admin\AppData\Local\Programs\Python\Python313\python.exe. В трее (у часов): меню → Выйти, или диспетчер задач.
+start flavor=tutor port=8765 exe=C:\Users\Admin\Downloads\Проект обучения\dist\Nihongo.exe argv=['C:\\Users\\Admin\\Downloads\\Проект обучения\\dist\\Nihongo.exe'] frozen=True
+occupant kind=other pid=49236 C:\Users\Admin\AppData\Local\Programs\Python\Python313\python.exe
+die: 日本語学習アシスタント не отвечает. Занят C:\Users\Admin\AppData\Local\Programs\Python\Python313\python.exe. В трее (у часов): меню → Выйти, или диспетчер задач.

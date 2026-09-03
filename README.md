@@ -1,22 +1,97 @@
-# Nihongo-wo-benkyo-support
+# 日本語学習アシスタント
 
-=----------=
-requirements:
-=----------=
+Локальный тьютор японского: занятие → утверждения → проба вслух → расписание. Рядом — справочник **日本語便覧** (темы, 擬音, словарь) без Zoom и проб.
 
-fastapi==0.116.1
-uvicorn[standard]==0.35.0
-python-multipart==0.0.32
-numpy==2.5.2
-sounddevice==0.5.6
-psutil==7.2.2
-pypdf==6.16.2
-faster-whisper==1.2.1
-pykakasi==2.3.0
-pywebview==5.4
-pystray==0.19.5
-winotify==1.1.0
+Это репозиторий **исходников**. Готовые `.exe` сюда не входят: их собирает `.\build.ps1`.
 
-=----------=
-This project was made to help people, who are interested in Japanese language. It consists of dictionary which base was taken from Yarxi dictionary, Some couple of the Students Books like Minna no Nihongo, Mai Nichi no kikitori and so on. If this project was useful pwease star me. It will show me that all my wasted time and resources do worth it <3
-=----------=
+## Два продукта
+
+| | 日本語学習アシスタント | 日本語便覧 |
+| --- | --- | --- |
+| Из исходников | `.\run.ps1` | `.\run.ps1 -Atlas` |
+| После сборки | `dist\Nihongo.exe` | `dist\Benran.exe` |
+| Данные | папка `data` | папка `data-benran` |
+| Рельсы | Темы, Zoom, Настройки | Темы, 擬音, Словарь |
+
+Имя `Benran.exe` важно: по нему открывается справочник. Не переименовывайте `Nihongo.exe` в случайное имя.
+
+Каталог тем — справка, не журнал занятий. Клик по теме не создаёт пробы. 擬音 в словаре — просмотр, не задание. После урока следующее действие — произнести форму, а не дайджест.
+
+## Где исходники
+
+Корень этой папки, не `dist`:
+
+- `proba/` — ядро (занятие, утверждение, проба, расписание), словарь, Zoom-адаптер
+- `web/` — окно
+- `pack/` — сборка exe
+- `tools/` — упаковка справочных JSON
+- `tests/`
+- `assets/` — иконки; дампы словаря сюда не кладут
+- `AGENTS.md` — правила продукта для правок
+
+Словарь и кандзи для запуска уже лежат в `proba/*.json`. Папки `.venv`, `data`, `data-benran`, `dist`, `build` — локальные, в git их нет.
+
+## Требования
+
+- Windows 10/11
+- Python 3.13
+- Microsoft Edge WebView2 (обычно уже есть)
+
+## Запуск из исходников
+
+```powershell
+cd путь\к\этому\репозиторию
+.\run.ps1
+```
+
+Справочник:
+
+```powershell
+.\run.ps1 -Atlas
+```
+
+Скрипт создаёт `.venv` и ставит `requirements.txt`. Окно — программа, не вкладка браузера. Крестик сворачивает в трей; выход — из меню иконки у часов.
+
+В исходниках есть расшифровка `faster-whisper` (модель tiny при первом запуске). Если её нет — вставьте текст занятия в Настройки → Текст.
+
+## Тесты
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -q
+```
+
+## Сборка exe
+
+Exe в репозиторий не коммитят. Сборка:
+
+```powershell
+.\run.ps1
+# закрыть окно через трей, затем:
+.\build.ps1
+```
+
+Появятся `dist\Nihongo.exe` и `dist\Benran.exe`. Первое открытие распаковывает файл — подождите до минуты. Ярлыки на рабочий стол и в меню Пуск сборка не ставит. Старые `.exe` в `dist` при сборке удаляются.
+
+В exe нет Whisper (иначе сотни мегабайт). Текст занятия вставляют вручную.
+
+## Поделиться с человеком
+
+Справочник: один файл `dist\Benran.exe` (~50 МБ). Тьютор: `dist\Nihongo.exe`. Не прикладывайте `data` / `data-benran` — это ваши занятия, не программа.
+
+## Что не выкладывать на GitHub
+
+- `.venv/`
+- `data/`, `data-benran/` (база и записи)
+- `dist/`, `build/`
+- `*.exe`
+- `assets/jmdict-*.zip` (качаются при упаковке)
+
+Если заливаете папку без git — не тащите эти каталоги. `.gitignore` уже их отсекает.
+
+## Ядро
+
+Типы: SourceEvent, Claim, Probe, Schedule. Zoom пишет звук сегментами, не кадр свёрнутого окна. Предложения из расшифровки остаются черновиками, пока их не примут. Учитель побеждает конфликт ключей.
+
+## Чужие данные в справочнике
+
+Упакованные JSON собраны из открытых словарей (JMdict / jmdict-simplified; начертания кандзи — KanjiVG, CC BY-SA). В окне программы источник не показывают. Переупаковка: `tools/pack_compounds.py`, `tools/pack_giongo.py`, `tools/pack_kanjivg.py`.
