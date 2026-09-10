@@ -42,24 +42,26 @@
 
 ## ML vs Rules
 
-| Компонент | Тип |
-| --- | --- |
-| ASR (faster-whisper) | ML, внешняя модель |
-| Разбор текста (extract.py) | Rules, свой код |
-| Оценка ответа (kana.py) | Rules, свой код |
-| Метрики (headline) | Rules, свой код |
-| Словарь и lookup | Свои JSON + свой код |
+=-= Пайплайн от сырого аудио до метрик. ML используется только на шаге ASR, остальное - свои правила и лексикон. =-=
+
+| Компонент | Тип | Где код |
+| --- | --- | --- |
+| ASR (faster-whisper) | ML, внешняя модель | обёртка в proba/ |
+| Разбор текста (extract.py) | Rules, свой код | 	extract.py |
+| Оценка ответа (kana.py) | Rules, свой код | kana.py |
+| Метрики (headline) | Rules, свой код | 	headline |
+| Словарь и lookup | Свои JSON + свой код | свои JSON + lookup |
 
 ## Data and Metrics
 
-- Лог попыток: attempt_index, delay_hours, outcome, kind.
+- Лог попыток: attempt_index, delay_hours, outcome, kind. Пример записи: attempt_index=3, delay_hours=26.5, outcome=pass, kind=teacher
 - Главная метрика: headline.pass_rate — доля первых успешных попыток после паузы >= 24 ч.
 - Учительские попытки не усредняются с учебником: если есть учительские, считаются только они.
 - «Рост» в ядре — это накопитель зеленых кружков, не mastery. Кривая может падать.
 
 ## Future Work
 
-- Заменить rule-based extract на модель, когда накопится достаточно данных.
+- Заменить rule-based extract на sequence labeling, когда накопится достаточно данных.
 - Добавить A/B-сравнение: правила против ML на одном наборе.
 - Собирать больше метрик: precision/recall по извлечению форм.
 
