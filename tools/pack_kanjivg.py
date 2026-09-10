@@ -1,5 +1,3 @@
-"""Pack KanjiVG stroke paths and component groups for the N5–N1 bank."""
-
 from __future__ import annotations
 
 import gzip
