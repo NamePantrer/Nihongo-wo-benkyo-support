@@ -1,8 +1,3 @@
-"""Pack JP–RU compounds from JMdict (rus) for the unofficial N5–N1 bank.
-
-Lookup only. Not LEXICON. Not Yarxi. Source: EDRDG JMdict via jmdict-simplified.
-"""
-
 from __future__ import annotations
 
 import json
