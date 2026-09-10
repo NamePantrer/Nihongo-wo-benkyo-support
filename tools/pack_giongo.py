@@ -1,11 +1,3 @@
-"""Pack JMdict on-mim (擬音語・擬態語) for lookup.
-
-Not LEXICON. Not catalog stations. Not a probe.
-The rus dump has empty misc tags, so on-mim ids come from jmdict-eng;
-Russian glosses come from jmdict-rus, joined by entry id.
-Not the 擬音 textbook pairs (those stay one N4 skip-kind station).
-"""
-
 from __future__ import annotations
 
 import json
