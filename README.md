@@ -31,6 +31,38 @@
 
 Словарь и кандзи для запуска уже лежат в `proba/*.json`. Папки `.venv`, `data`, `data-benran`, `dist`, `build` — локальные, в git их нет.
 
+## Pipeline
+
+1. Audio input: Zoom adapter пишет wav сегментами.
+2. ASR: faster-whisper (tiny) транскрибирует звук в текст.
+3. Text extraction: extract.py режет текст по 。！？, ищет формы из LEXICON.
+4. Draft: совпадения становятся proposed, пока пользователь не примет.
+5. Probe evaluation: kana.grade сравнивает ответ с ключом, исход pass/fail/partial.
+6. Metrics: headline.pass_rate считает долю первых успешных попыток после паузы >= 24 ч.
+
+## ML vs Rules
+
+| Компонент | Тип |
+| --- | --- |
+| ASR (faster-whisper) | ML, внешняя модель |
+| Разбор текста (extract.py) | Rules, свой код |
+| Оценка ответа (kana.py) | Rules, свой код |
+| Метрики (headline) | Rules, свой код |
+| Словарь и lookup | Свои JSON + свой код |
+
+## Data and Metrics
+
+- Лог попыток: attempt_index, delay_hours, outcome, kind.
+- Главная метрика: headline.pass_rate — доля первых успешных попыток после паузы >= 24 ч.
+- Учительские попытки не усредняются с учебником: если есть учительские, считаются только они.
+- «Рост» в ядре — это накопитель зеленых кружков, не mastery. Кривая может падать.
+
+## Future Work
+
+- Заменить rule-based extract на модель, когда накопится достаточно данных.
+- Добавить A/B-сравнение: правила против ML на одном наборе.
+- Собирать больше метрик: precision/recall по извлечению форм.
+
 ## Требования
 
 - Windows 10/11
