@@ -1,132 +1,81 @@
-# 日本語学習アシスタント
+# Nihongo-wo-benkyo-support
 
-Локальный тьютор японского: занятие → утверждения → проба вслух → расписание. Рядом — справочник **日本語便覧** (темы, 擬音, словарь) без Zoom и проб.
-(Учебный проект: пайплайн обработки аудио и текста с разделением ML и rule-based логики)
+Вспомогательное дерево локального тьютора японского **日本語学習アシスタント** и справочника **日本語便覧**. В репозитории лежат окно, тесты, скрипты упаковки словарей, дампы JMdict и KanjiVG, сценарии запуска и сборки под Windows, а также уже закоммиченные локальные базы и следы сборки PyInstaller.
 
-Это репозиторий **исходников**. Готовые `.exe` сюда не входят: их собирает `.\build.ps1`.
+Правила продукта — в `AGENTS.md`. Статическая разметка `web/index.html` показывает три рельса: Темы, Zoom, Настройки. Для справочника `AGENTS.md` задаёт рельсы Темы, 擬音, Словарь и отдельный каталог данных `data-benran`. Имена готовых файлов в `AGENTS.md` и в `tests/test_pack.py`: `dist\Nihongo.exe` и `dist\Benran.exe`. Копирование второго файла делает `pack/win_pack.py` (имена берёт из `proba.brand`).
 
-## Два продукта
+## Связь с nihongo-tutor
 
-| | 日本語学習アシスタント | 日本語便覧 |
-| --- | --- | --- |
-| Из исходников | `.\run.ps1` | `.\run.ps1 -Atlas` |
-| После сборки | `dist\Nihongo.exe` | `dist\Benran.exe` |
-| Данные | папка `data` | папка `data-benran` |
-| Рельсы | Темы, Zoom, Настройки | Темы, 擬音, Словарь |
+Каталога `proba/` в этом дереве нет. Его импортируют:
 
-Имя `Benran.exe` важно: по нему открывается справочник. Не переименовывайте `Nihongo.exe` в случайное имя.
+- `run.ps1` — модуль `proba.launch` (ключ `-Atlas` добавляет `--atlas`);
+- `pack/proba.spec` — точка входа `proba/launch.py`, имя сборки `Nihongo`;
+- `pack/win_pack.py` и `pack/smoke_exe.py`;
+- тесты в `tests/` (`from proba import ...`).
 
-Каталог тем — справка, не журнал занятий. Клик по теме не создаёт пробы. 擬音 в словаре — просмотр, не задание. После урока следующее действие — произнести форму, а не дайджест.
+Модули и JSON, которые эти файлы ожидают (`jlpt_kanji.json`, `compounds.json`, `giongo.json`, `giongo_en_ru.json`, `kanjivg_paths.json`, `kanjivg_parts.json`), лежат в репозитории [nihongo-tutor](https://github.com/NamePantrer/nihongo-tutor). Побайтно совпадают `run.ps1`, `build.ps1`, `pack/make_icon.py`, `pack/win_pack.py`, `pack/smoke_exe.py`, иконки в `assets/`, `web/romaji.js`, `web/sky.js`, `web/strokes.js` и часть тестов. `web/app.js`, `web/styles.css`, `pack/proba.spec` и скрипты `tools/` в двух репозиториях различаются.
 
-## Где исходники
+Пока каталога `proba/` нет рядом с этими файлами, `.\run.ps1`, `.\build.ps1` и тесты с `import proba` не запускаются.
 
-Корень этой папки, не `dist`:
+## Структура
 
-- `proba/` — ядро (занятие, утверждение, проба, расписание), словарь, Zoom-адаптер
-- `web/` — окно
-- `pack/` — сборка exe
-- `tools/` — упаковка справочных JSON
-- `tests/`
-- `assets/` — иконки; дампы словаря сюда не кладут
-- `AGENTS.md` — правила продукта для правок
+| Путь | Содержимое |
+| --- | --- |
+| `web/` | Окно: `index.html`, `app.js`, `styles.css`, `romaji.js`, `sky.js`, `strokes.js` |
+| `tests/` | Проверки пакета `proba` и скриптов упаковки |
+| `tools/` | Сборка JSON из JMdict и KanjiVG |
+| `pack/` | Спека PyInstaller, иконка, копирование exe справочника, дымовой запуск |
+| `assets/` | `jmdict-eng.json.zip`, `jmdict-rus.json.zip`, `kanjivg-20250816.xml.gz`, иконки |
+| `build/` | След PyInstaller (`*.toc`, `*.pyc`, `base_library.zip`) и куски `giongo_en_*.json` |
+| `data/` | База тьютора `proba.db`, `toast_log.jsonl`, wav в `data/capture/` |
+| `data-benran/` | База справочника |
+| `dist/` | Базы и `proba-debug.log` в каталоге, куда сборка кладёт exe |
+| `run.ps1`, `build.ps1` | Запуск из исходников и сборка |
+| `requirements.txt` | Зависимости Python |
+| `AGENTS.md` | Правила продукта |
 
-Словарь и кандзи для запуска уже лежат в `proba/*.json`. Папки `.venv`, `data`, `data-benran`, `dist`, `build` — локальные, в git их нет.
+В хабе «Настройки» (`web/app.js`) пункты: Срез, Текст или PDF, Занятие вручную, Очередь, Словарь, Черновики, К учителю, После паузы. Адрес `#/import` открывает `#/settings?s=text`.
 
-## Pipeline
+## Запуск и сборка
 
-1. Audio input: Zoom adapter пишет wav сегментами.
-2. ASR: faster-whisper (tiny) транскрибирует звук в текст.
-3. Text extraction: extract.py режет текст по 。！？, ищет формы из LEXICON.
-4. Draft: совпадения становятся proposed, пока пользователь не примет.
-5. Probe evaluation: kana.grade сравнивает ответ с ключом, исход pass/fail/partial.
-6. Metrics: headline.pass_rate считает долю первых успешных попыток после паузы >= 24 ч.
-
-## ML vs Rules
-
-=-= Пайплайн от сырого аудио до метрик. ML используется только на шаге ASR, остальное - свои правила и лексикон. =-=
-
-| Компонент | Тип | Где код |
-| --- | --- | --- |
-| ASR (faster-whisper) | ML, внешняя модель | обёртка в proba/ |
-| Разбор текста (extract.py) | Rules, свой код | 	extract.py |
-| Оценка ответа (kana.py) | Rules, свой код | kana.py |
-| Метрики (headline) | Rules, свой код | 	headline |
-| Словарь и lookup | Свои JSON + свой код | свои JSON + lookup |
-
-## Data and Metrics
-
-- Лог попыток: attempt_index, delay_hours, outcome, kind. Пример записи: attempt_index=3, delay_hours=26.5, outcome=pass, kind=teacher
-- Главная метрика: headline.pass_rate — доля первых успешных попыток после паузы >= 24 ч.
-- Учительские попытки не усредняются с учебником: если есть учительские, считаются только они.
-- «Рост» в ядре — это накопитель зеленых кружков, не mastery. Кривая может падать.
-
-## Future Work
-
-- Заменить rule-based extract на sequence labeling, когда накопится достаточно данных.
-- Добавить A/B-сравнение: правила против ML на одном наборе.
-- Собирать больше метрик: precision/recall по извлечению форм.
-
-## Требования
-
-- Windows 10/11
-- Python 3.13
-- Microsoft Edge WebView2 (обычно уже есть)
-
-## Запуск из исходников
+Скрипты написаны на PowerShell под Windows. `run.ps1` ищет `%LOCALAPPDATA%\Programs\Python\Python313\python.exe`, иначе вызывает `py`, создаёт `.venv`, ставит `requirements.txt` и запускает модуль.
 
 ```powershell
-cd путь\к\этому\репозиторию
 .\run.ps1
-```
-
-Справочник:
-
-```powershell
 .\run.ps1 -Atlas
 ```
 
-Скрипт создаёт `.venv` и ставит `requirements.txt`. Окно — программа, не вкладка браузера. Крестик сворачивает в трей; выход — из меню иконки у часов.
+`build.ps1` останавливает уже запущенный exe, ставит зависимости и PyInstaller, вызывает `pack/make_icon.py` и собирает `pack/proba.spec`. Спека пишет `dist\Nihongo.exe`. Шаг `pack/win_pack.py copy` копирует его во второй exe справочника и удаляет прочие exe и ярлыки с рабочего стола и из меню Пуск. Список `excludes` в спеке выкидывает из exe `faster_whisper` и соседние пакеты распознавания. В `requirements.txt` пакет `faster-whisper` указан: им пользуется запуск из исходников, когда пакет `proba` на месте.
 
-В исходниках есть расшифровка `faster-whisper` (модель tiny при первом запуске). Если её нет — вставьте текст занятия в Настройки → Текст.
+Дымовая проверка собранного файла — `pack/smoke_exe.py`. Ей нужны `proba.brand` и файл `dist\Nihongo.exe`.
 
-## Тесты
+Тесты, когда интерпретатор видит пакет `proba`:
 
 ```powershell
 .\.venv\Scripts\python.exe -m unittest discover -s tests -q
 ```
 
-## Сборка exe
+## PDF и метка TeX
 
-Exe в репозиторий не коммитят. Сборка:
+Файлов `.tex` в дереве нет, и репозиторий не собирает PDF.
+
+Долю языка TeX на GitHub дают два файла PyInstaller: `build/proba/Analysis-00.toc` и `build/proba/EXE-00.toc`. Это списки модулей сборки.
+
+Чужой PDF окно принимает на экране «Текст или PDF»: поле файла с `accept="application/pdf"`, запрос `POST /api/import/pdf`. В зависимостях за чтение PDF отвечает `pypdf`. Обработчик этого адреса находится в пакете `proba`.
+
+## Упаковка справочных JSON
+
+Скрипты читают список кандзи из `proba/jlpt_kanji.json` и пишут результат в `proba/`. Эти пути появляются вместе с пакетом из nihongo-tutor. Архивы словарей уже лежат в `assets/`. Если файла нет или он короче порога в скрипте, скрипт скачивает релиз [jmdict-simplified](https://github.com/scriptin/jmdict-simplified) `3.6.2+20260622163854`.
 
 ```powershell
-.\run.ps1
-# закрыть окно через трей, затем:
-.\build.ps1
+.\.venv\Scripts\python.exe tools\pack_compounds.py
+.\.venv\Scripts\python.exe tools\pack_giongo.py
+.\.venv\Scripts\python.exe tools\pack_giongo.py rewrite
+.\.venv\Scripts\python.exe tools\pack_kanjivg.py
 ```
 
-Появятся `dist\Nihongo.exe` и `dist\Benran.exe`. Первое открытие распаковывает файл — подождите до минуты. Ярлыки на рабочий стол и в меню Пуск сборка не ставит. Старые `.exe` в `dist` при сборке удаляются.
+- `pack_compounds.py` читает `assets/jmdict-rus.json.zip` и пишет `proba/compounds.json` (`source`: `jmdict`).
+- `pack_giongo.py` читает русскую и английскую выгрузки JMdict, отбирает пометы `on-mim` и подставляет русский текст из `proba/giongo_en_ru.json` в `proba/giongo.json`. Аргумент `rewrite` заново прогоняет уже записанный `giongo.json` через очистку глосс.
+- `pack_kanjivg.py` читает `assets/kanjivg-20250816.xml.gz` и пишет `proba/kanjivg_paths.json` и `proba/kanjivg_parts.json`. В `AGENTS.md` начертания KanjiVG указаны как CC BY-SA.
 
-В exe нет Whisper (иначе сотни мегабайт). Текст занятия вставляют вручную.
-
-## Поделиться с человеком
-
-Справочник: один файл `dist\Benran.exe` (~50 МБ). Тьютор: `dist\Nihongo.exe`. Не прикладывайте `data` / `data-benran` — это ваши занятия, не программа.
-
-## Что не выкладывать на GitHub
-
-- `.venv/`
-- `data/`, `data-benran/` (база и записи)
-- `dist/`, `build/`
-- `*.exe`
-- `assets/jmdict-*.zip` (качаются при упаковке)
-
-Если заливаете папку без git — не тащите эти каталоги. `.gitignore` уже их отсекает.
-
-## Ядро
-
-Типы: SourceEvent, Claim, Probe, Schedule. Zoom пишет звук сегментами, не кадр свёрнутого окна. Предложения из расшифровки остаются черновиками, пока их не примут. Учитель побеждает конфликт ключей.
-
-## Чужие данные в справочнике
-
-Упакованные JSON собраны из открытых словарей (JMdict / jmdict-simplified; начертания кандзи — KanjiVG, CC BY-SA). В окне программы источник не показывают. Переупаковка: `tools/pack_compounds.py`, `tools/pack_giongo.py`, `tools/pack_kanjivg.py`.
+Файлы `build/giongo_en_chunk_*.json`, `build/giongo_en_ru_*.json` и `build/giongo_en_unique.json` скрипты `tools/` не открывают.
